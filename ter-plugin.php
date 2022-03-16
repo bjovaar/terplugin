@@ -9,10 +9,10 @@
  * 
  * @Wordpress-plugin
  * 
- * Plugin Name: The Editor Recommendations (TER Plugin)
+ * Plugin Name: OLD The Editor Recommendations (TER Plugin)
  * Plugin URI: http://www.vaarvik.com/ter-widget
  * Description: Plugin that show post in a widget that the editor recommmend with mark post with star.
- * Version: 1.0
+ * Version: 0.1
  * Author: Bjorn Inge Vaarvik
  * Author URI: http://www.vaarvik.com
  * Text domain:  ter_widget-lang
@@ -59,9 +59,9 @@ if ( ! defined( 'TERplugin_PLUGIN_URL' ) ) {
 
 
 /*
- * --------------------------------------- *
- * Add editor recommandations checkbox
- * --------------------------------------- *
+ * -------------------------------------------- *
+ * Add editor recommandations checkbox column
+ * -------------------------------------------- *
  */
 
 
@@ -88,8 +88,37 @@ add_filter('manage_post_posts_columns', function($columns) {
 
 
 
+/* --------------------------------------------- *
+ * Add icon for the custom recommendation column 
+ * --------------------------------------------- *
+ */
 
-// Format the column width with CSS
+add_filter( 'manage_post_posts_columns', 'filter_manage_post_posts_columns', 11, 1 );
+function filter_manage_post_posts_columns( $columns ) {
+
+  // just to be sure the custom column is present
+  if ( ! isset( $columns['verified'] ) ) {
+    return $columns;
+  }
+
+  // Lets imitate how the default comments icon is handeled
+  $columns['verified'] = sprintf(
+    '<span class="dashicons dashicons-thumbs-up" title="%1$s"><span class="screen-reader-text">%2$s</span></span>',
+    __('Recommendations', 'terplugin-lang'), // copied from the plugin to use translated text, if it exists
+    __('Recommendations', 'terplugin-lang')
+  );
+
+  // modified array
+  return $columns;
+}
+
+
+
+/* ---------------------------------- *
+ * Format the column width with CSS
+ * ---------------------------------- *
+ */
+
 add_action('admin_head', 'terplugin_add_admin_styles');
 function terplugin_add_admin_styles() {
   echo '<style>.column-terplugin_thumb {width: 80px;}</style>';
@@ -106,12 +135,14 @@ parent::__construct(
 'ter_widget', 
   
 // Widget name will appear in UI
-__('Editor Recommandations', 'terplugin-lang'), 
+__('Editor Recommandetions', 'terplugin-lang'), 
   
 // Widget description
-array( 'Show post that the editor recommmend' => __( 'Editor Recommandations', 'terplugin-lang' ), ) 
+array( 'Show post that the editor recommmend' => __( 'Editor Recommandetions', 'terplugin-lang' ), ) 
 );
 }
+
+
   
 // Creating widget front-end
   
@@ -128,6 +159,7 @@ echo wp_kses_post($args['before_title'] . $title . $args['after_title']);
 echo wp_kses_post(terplugin_show());
 
 }
+
           
 // Widget Backend 
 public function form( $instance ) {
@@ -137,6 +169,7 @@ $title = $instance[ 'title' ];
 else {
 $title = __( 'New title', 'terplugin-lang' );
 }
+
 
 // Widget admin form
 ?>
@@ -167,7 +200,7 @@ add_action( 'widgets_init', 'terplugin_load_widget' );
 
 /*
  * ---------------------------------- *
- * Show the info in TER plugin
+ * Show the info in widget
  * ---------------------------------- *
  */
 function terplugin_show() { 
@@ -183,8 +216,6 @@ function terplugin_show() {
     ));
  
 
-
-
 // The loop to display posts
 if ( $the_query->have_posts() ) {
     $output .='<ul>';
@@ -194,9 +225,11 @@ if ( $the_query->have_posts() ) {
     $output .='</ul>';
 
 } else {
-    // Show this when no future posts are found
+
+// Show this when no future posts are found
     $output .= '<div class="terplugin_noplan"> '. __('No planed posts yet.', 'terplugin-lang-lang') . '</div>';
 }
+
 // Reset post data
 wp_reset_postdata();
  
